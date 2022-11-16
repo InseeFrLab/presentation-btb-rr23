@@ -1,0 +1,11 @@
+:root{
+	--page-titre: 	 url('img/TitlePage_16_9_vert.svg');	
+	--page-sommaire: url('img/PageSommaire_16_9_vert.svg');	
+	--page-partie:   url('img/PagePartie_16_9_vert.svg');
+	--page-standard: url('img/PageStandard_16_9_vert.svg');
+	--page-seyes:    url('img/PageSeyes_16_9_vert.svg');
+	--page-fin:      url('img/EndPage_16_9_vert.svg');
+	
+	--couleur-texte: #8bc8a4;
+	--couleur-sommaire: #8bc8a4;
+}

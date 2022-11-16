@@ -1,0 +1,86 @@
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 200;
+  src: local('Roboto Light'), url(fonts/Roboto/Roboto-Light.ttf) format('truetype');
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Roboto'), url(fonts/Roboto/Roboto-Regular.ttf) format('truetype');
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: bold;
+  src: local('Roboto Bold'), url(fonts/Roboto/Roboto-Bold.ttf) format('truetype');
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 800;
+  src: local('Roboto Black'), url(fonts/Roboto/Roboto-Black.ttf) format('truetype');
+}
+
+/* latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Roboto Mono'), url(fonts/Roboto_Mono/RobotoMono-Regular.ttf) format('truetype');
+}
+
+
+/* latin */
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-style: normal;
+  font-weight: 200;
+  src: local('Roboto Condensed Light'), url(fonts/Roboto_Condensed/RobotoCondensed-Light.ttf) format('truetype');
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Roboto Condensed'), url(fonts/Roboto_Condensed/RobotoCondensed-Regular.ttf) format('truetype');
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-style: normal;
+  font-weight: bold;
+  src: local('Roboto Condensed Bold'), url(fonts/Roboto_Condensed/RobotoCondensed-Bold.ttf) format('truetype');
+}
+
+/* latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Roboto Mono'), url(fonts/Roboto_Mono/RobotoMono-Regular.ttf) format('truetype');
+}
+
+
+
+body {
+  font-family: "Roboto", "Open Sans", sans-serif;
+
+}
+h1 {
+  font-family: 'Roboto Condensed';
+  font-weight: normal;
+}
+h2, h3 {
+  font-family: 'Roboto Black';
+  font-weight: normal;
+}
+.remark-code, .remark-inline-code {
+  font-family: "Roboto Mono", courier;
+  # font-size: 75%;
+}
