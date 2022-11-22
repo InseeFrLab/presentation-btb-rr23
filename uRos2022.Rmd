@@ -200,7 +200,7 @@ In this presentation, we propose to present the main functionalities of btb with
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE, eval=TRUE}
 ## Liste des librairies utilisées
-packages <-  c("dplyr","sf","btb","mapsf","leaflet","mapview")
+packages <-  c("dplyr","sf","btb","mapsf","leaflet","mapview","kableExtra","magrittr")
 ## Vérifier si la librairie est installée, si non l'installer, puis la charger
 package.check <- lapply(
   packages,
@@ -229,26 +229,20 @@ if (!require("aws.s3", character.only = TRUE)) {
 .pull-left[
 ## Load map layer
 
-```{r, eval=TRUE, include=FALSE}
-url_bucket <- "https://minio.lab.sspcloud.fr/"
-bucket <- "projet-formation"
-object <- paste0("r-lissage-spatial/",
-       "ventesImmo_couronneParis.RDS")
-chemin_file <- paste0(url_bucket,bucket,
-    "/r-lissage-spatial/depCouronne.gpkg")
-depCouronne_sf <- sf::st_read(chemin_file)
-```
+<!-- ```{r, eval=TRUE, include=FALSE} -->
+<!-- url_suburbs <-"https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/depCouronne.gpkg" -->
+<!-- suburbs_sf <- sf::st_read(url_suburbs) -->
+<!-- ``` -->
 
-```{r, eval=FALSE, echo=TRUE, warning=FALSE,message=FALSE}
-chemin_file <- paste0(url_bucket,bucket,
-    "/r-lissage-spatial/depCouronne.gpkg")
-depCouronne_sf <- sf::st_read(chemin_file)
+```{r, eval=T, echo=TRUE, warning=FALSE,message=FALSE,results = 'hide'}
+url_suburbs <-"https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/depCouronne.gpkg"
+suburbs_sf <- sf::st_read(url_suburbs)
 ```
 
 ```{r, eval=TRUE, echo=TRUE, fig.height=4}
-depCouronne_sf <- depCouronne_sf %>%
+suburbs_sf <- suburbs_sf %>%
   rename(geometry=geom)
-plot(depCouronne_sf$geometry)
+mapview(suburbs_sf$geometry)
 ```
 
 ]
@@ -258,10 +252,9 @@ plot(depCouronne_sf$geometry)
 ## Load database
 
 ```{r, eval=TRUE, echo=TRUE}
-url_file <- url(paste0(url_bucket,bucket,"/",
-                       object))
+url_file <- url("https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/ventesImmo_couronneParis.RDS")
 dfBase <- readRDS(url_file)
-str(dfBase)
+kableExtra::kbl(head(dfBase,5)) %>% scroll_box(width = "500px", height = "200px")
 
 ```
 ]
@@ -272,7 +265,7 @@ str(dfBase)
 # Select data
 
 .pull-left[
-**1.**  Transform observations into points
+**1.**  Transform observations into geometric points
 
 ```{r selectDonnee2a, eval=TRUE}
 sfBase <- sf::st_as_sf(dfBase,
@@ -284,10 +277,8 @@ sfBase <- sf::st_as_sf(dfBase,
 **2.**  Buffer zone
 
 ```{r selectDonnee2b, eval=TRUE}
-paris_sf <- depCouronne_sf[
-  depCouronne_sf$code=="75",]
-buffer_sf <- st_buffer(paris_sf,
-                       dist = 2000)
+paris_sf <- suburbs_sf %>% filter(code=="75")
+buffer_sf <- st_buffer(paris_sf,dist = 2000)
 ```
 
 
@@ -303,11 +294,12 @@ sfBase_filtre <- st_join(sfBase, buffer_sf,
 ```{r, echo=FALSE, eval=TRUE}
 # Mise en forme de la couche buffer
 buffer_sf$nom <- "buffer"
+buffer_line <- buffer_sf %>% st_cast("MULTILINESTRING")
 # Échantillon de 2000 observations dans le buffer
 sfBase_sample <- sfBase_filtre[sample(1:nrow(sfBase_filtre),2000) ,]
 # Cartographie pédagogique avec mapview
 mapview(paris_sf ,col.regions= "#26cce7")+
-  mapview(buffer_sf %>% st_cast("MULTILINESTRING"),color="#FFC300",lwd=6)+
+  mapview(buffer_line,color="#FFC300",lwd=6)+
   mapview(sfBase_sample,#col.regions = "black",alpha.regions=0.5,
           alpha=0,cex=2)
 ```
@@ -323,79 +315,50 @@ Remarque: Pour la zone tampon, prendre une marge légèrement plus grande que le
 ---
 
 .partie[02]
-# Carroyage [1/3]
+# Step 0 : Cells aggregations
 
-**1.**  Associer chaque point (= vente géolocalisée) au centroïde du carreau auquel il appartient (`btb_add_centroids`).
+.pull-left[
 
++ Better understand your data before smoothing it : **aggregation** inside grid cells !
++ It's really easy using `btb` functions such as : 
+  + `btb_add_centroids`
+  + `btb_ptsToGrid`
 
-```{r carroyage1, eval=TRUE}
+➡️ Let's calculate the mean price per square meters (among 2021 sells) : 
+
+]
+
+.pull-right[
+
+```{r carroyage, eval=TRUE,include=FALSE}
 iCellSize = 200 # Square of 200 meters
 points_carroyage <- btb::btb_add_centroids(pts = sfBase_filtre,iCellSize = iCellSize) 
-```
 
---
-
-**2.**  Compter le nombre de ventes par carreau
-
-```{r carroyage2, eval=TRUE}
 points_centroides <- points_carroyage %>%
   st_drop_geometry() %>% 
   group_by(x_centro,y_centro) %>% 
-  count(name = "nbVentes")
-head(points_centroides,1)
-```
+  summarise(sum_surf=sum(surface_reelle_bati),
+            sum_price=sum(valeur_fonciere)) %>% 
+  ungroup() %>% 
+  mutate(price_per_sqrmeter=sum_price/sum_surf)
 
-???
-Agréger les données sur chaque centroïde de la grille. En d'autres termes, compter le nombre de ventes par carreau
-
-
----
-
-.partie[02]
-# Carroyage [2/3]
-
-**3.**  Passer d'une table de centroïdes à une table de carreaux vectoriels via  `btb::btb_ptsToGrid`.
-<small>
--   `df` : un tableau avec les colonnes `x` et `y` représentant les coordonnées des centroïdes de la grille ;
--   `sEPSG` : une chaîne de caractères indiquant le code epsg du système de projection utilisé ;
--   `iCellSize` : la taille des carreaux (longueur du côté, en mètres).
-</small>
-
-```{r carroyage3, eval=TRUE}
 carreaux <- btb::btb_ptsToGrid(pts = points_centroides,
                           sEPSG = "2154", iCellSize = iCellSize)
-```
 
---
-
-**4.**  Se restreindre au champ des carreaux intersectant Paris
-
-```{r carroyage4, eval=TRUE}
 carreaux <- carreaux %>% st_join(paris_sf,left=F)
 ```
 
 
----
 
-.partie[02]
-# Carroyage [3/3]
-
-
-.pull-left[
-## On obtient le carroyage des ventes dans Paris intramuros
-]
-
-.pull-right[
 ```{r carroyage5, eval=TRUE, echo=FALSE}
-#| code-fold: true
-#| code-summary: code du production de la carte
+
 contourParis <- st_cast(paris_sf[,c("geometry")],"MULTILINESTRING")
 mf_init(x=carreaux,theme = "agolalight")
 mf_map(x = carreaux,
        type = "choro",
-       var="nbVentes",
+       var="price_per_sqrmeter",
        breaks = "quantile",
-       border = NA, # C'est ici que ça se passe
+       border = NA, 
        nbreaks = 5,
        lwd=1,
        leg_val_rnd = 1,
@@ -403,39 +366,36 @@ mf_map(x = carreaux,
 mf_map(x = contourParis,
        lwd=4,
        col="black",add = TRUE)
-mf_layout(title = "Carroyage du nombre de ventes",
+mf_layout(title = "Mean price per m²",
           credits = "Insee-DSAU, DGFiP, Etalab, IGN, mapsf")
 ```
-
 ]
+
 
 ---
 
 .partie[02]
-# Lissage [1/4]
+# Smothing [1/4]
 
-**1.**  On crée la variable `nbObsLisse = 1` pour chaque observation
-
-```{r varComptage, eval=TRUE}
-sfBase_filtre$nbObsLisse <- 1
-```
-
---
 
 **2.** spatial smoothing with `btb::btb_smooth`
 <small>
--   `pts` : le tableau des données à lisser. Il doit nécessairement contenir une colonne `x`, une colonne `y`, et 1 à n colonnes numériques (variables à lisser) ;
--   `sEPSG` : chaîne de caractères indiquant le code epsg du système de projection utilisé ;
--   `iCellSize` : un entier indiquant la taille des carreaux ;
--   `iBandwidth` : un entier indiquant le rayon de lissage.
+-   `pts` : table of points with only numeric values (geometric object or not) ;
+-   `sEPSG` : EPSG code (not always necessary) ;
+-   `iCellSize` : cell size in meters ;
+-   `iBandwidth` : smoothing bandwidth in meters.
 </small>
 
 ```{r lissAuto400,  results='hide', eval=TRUE}
-dataLissage <- sfBase_filtre[,c("nbObsLisse")]
+dataLissage <- sfBase_filtre[,c("valeur_fonciere","surface_reelle_bati")]
 sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
-                                    sEPSG = "2154",
-                                    iCellSize = 200, 
+                                    iCellSize = 50, 
                                     iBandwidth = 400)
+```
+
+```{r filtreParis}
+sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
+sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
 ```
 
 
@@ -447,20 +407,26 @@ sfCarrLiss <- btb::btb_smooth(pts = dataLissage,
 
 
 .pull-left[
-## Carte obtenue
+## Take a look at smoothed data 
+
+```{r showSmoothed,  echo=FALSE}
+kbl(sfCarrLiss_paris[1:50,]) %>%
+  kable_styling(bootstrap_options = "striped", font_size = 7) %>% 
+  scroll_box(width = "500px", height = "500px")
+```
+
 ]
 
 .pull-right[
 
-
+## Map the result :
 ```{r resLissAuto400, echo=FALSE, eval=TRUE}
-# Filtrage des carreaux lissés intersectant la ville de Paris
-sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
+
 # Carte lissée
 mf_init(x=sfCarrLiss_paris,theme = "agolalight")
 mf_map(x = sfCarrLiss_paris, 
        type = "choro",
-       var="nbObsLisse",
+       var="smooth_price",
        breaks = "quantile",
        border = NA, # C'est ici que ça se passe
        nbreaks = 5,
@@ -469,7 +435,7 @@ mf_map(x = sfCarrLiss_paris,
 mf_map(x = contourParis, 
        lwd=4,
        col="black",add = TRUE)
-mf_layout(title = "Lissage avec rayon de 400m",
+mf_layout(title = "Smoothed prices (400m bandwidth)",
           credits = "Insee-DSAU, DGFiP, Etalab, IGN, mapsf")
 ```
 
@@ -488,7 +454,7 @@ mf_layout(title = "Lissage avec rayon de 400m",
 
 .pull-right[
 
-```{r resLissage1000ssGrille, echo=FALSE, eval=TRUE}
+```{r resLissage1000ssGrille, echo=FALSE, eval=F}
 dataLissage <- sfBase_filtre[,c("nbObsLisse")]
 sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
                                     sEPSG = "2154",
@@ -528,7 +494,7 @@ mf_layout(title = "Lissage avec rayon de 1000m",
 ]
 .pull-right[
 
-```{r reslissPetitscarr, eval=TRUE, echo=FALSE}
+```{r reslissPetitscarr, eval=F, echo=T}
 dataLissage <- sfBase_filtre[,c("nbObsLisse")]
 sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
                                     sEPSG = "2154",
