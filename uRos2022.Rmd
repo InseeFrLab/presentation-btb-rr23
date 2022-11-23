@@ -7,7 +7,7 @@ date: ""
 output:
   xaringan::moon_reader:
     css: ["css/default.css", 
-          "css/insee_jaune.css",
+          "css/insee_vert.css",
           "css/insee_commun.css", 
           "css/insee_fonts.css"]
     self_contained : FALSE 
@@ -177,25 +177,53 @@ class: inverse
 ---
 
 .partie[02]
+# Find BTB
+
+## BTB available on Cran and Github
+
+```{r,eval=F}
+install.packages("btb")
+```
+
+## Find all the documentation you need
+
+Please visit BTB website : 
+
+➡️ https://inseefr.github.io/btb/
+
+
+## And do not hesitate to contact us !
+
+➡️  psar-au@insee.fr
+
+---
+
+.partie[02]
 # Database
 
 
 ## « [**D**emandes de **V**aleurs **F**oncières](https://www.data.gouv.fr/fr/datasets/demandes-de-valeurs-foncieres-geolocalisees/) »,
 
-Ventes de biens fonciers (terrains / maisons), Near **Paris**, France. Year **2021**
+- Real-estate sales database (houses and apartments)
+- In 2021
+- Paris region
+- Geolocalized (1 sale = 1 geographic point)
 
--   `id_mutation` : identifiant unique de la vente
--   `date_mutation` : date de la vente
--   `type_local` : appartement ou maison
--   `nombre_pieces_principales` : nombre de pièces dans le logement
--   `valeur_fonciere` : prix de vente
--   `surface_reelle_bati` : surface du logement
--   `x` : longitude (**en projection Lambert 93**)
--   `y` : latitude (**en projection Lambert 93**)
+Variables used in the following example : 
+
+-   `id_mutation` : id for each sale
+-   `valeur_fonciere` : price
+-   `surface_reelle_bati` : surface in square meters
+-   `x` : longitude (**Lambert 93 projection**)
+-   `y` : latitude (**Lambert 93 projection **)
 
 ???
 
-In this presentation, we propose to present the main functionalities of btb with a concrete example of application: the housing prices in Paris in 2021.
+In this example, we will extract our data from the source "Demande de valeur foncière".
+This source gives information about real estate sales in France.
+In particular, the sales are geolocalized thanks to the longitude and latitude variables.
+
+We'll show how to smooth prices per square meters in the town of Paris in 2021. 
 
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE, eval=TRUE}
@@ -213,13 +241,6 @@ package.check <- lapply(
 )
 ```
 
-```{r message=FALSE, warning=FALSE, echo=FALSE, eval=FALSE}
-if (!require("aws.s3", character.only = TRUE)) {
-      install.packages("aws.s3",repos = "https://cloud.R-project.org",
-                       dependencies = TRUE, quiet = TRUE)
-      library("aws.s3", character.only = TRUE)
-    }
-```
 
 ---
 
@@ -229,10 +250,6 @@ if (!require("aws.s3", character.only = TRUE)) {
 .pull-left[
 ## Load map layer
 
-<!-- ```{r, eval=TRUE, include=FALSE} -->
-<!-- url_suburbs <-"https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/depCouronne.gpkg" -->
-<!-- suburbs_sf <- sf::st_read(url_suburbs) -->
-<!-- ``` -->
 
 ```{r, eval=T, echo=TRUE, warning=FALSE,message=FALSE,results = 'hide'}
 url_suburbs <-"https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/depCouronne.gpkg"
@@ -240,10 +257,14 @@ suburbs_sf <- sf::st_read(url_suburbs)
 ```
 
 ```{r, eval=TRUE, echo=TRUE, fig.height=4}
-suburbs_sf <- suburbs_sf %>%
+suburbs_sf <- suburbs_sf %>% 
   rename(geometry=geom)
+```
+
+```{r mapdepartements, echo=F,out.height="200px"}
 mapview(suburbs_sf$geometry)
 ```
+
 
 ]
 
@@ -254,11 +275,22 @@ mapview(suburbs_sf$geometry)
 ```{r, eval=TRUE, echo=TRUE}
 url_file <- url("https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/ventesImmo_couronneParis.RDS")
 dfBase <- readRDS(url_file)
-kableExtra::kbl(head(dfBase,5)) %>% scroll_box(width = "500px", height = "200px")
+dfBase <- dfBase[,c("id_mutation","valeur_fonciere","surface_reelle_bati","x","y")]
 
 ```
+
+```{r, echo=F}
+kableExtra::kbl(head(dfBase,5)) %>% scroll_box(width = "500px", height = "200px")
+```
+
 ]
 
+???
+
+First, we import layer to get Paris boundaries. 
+Here, you can see the 3 departments called Petite Couronne. It's the dense urbain area around the town of Paris (the polygon in the middle).
+
+Secondly, we import our sales data and we select the useful variables. 
 ---
 
 .partie[02]
@@ -375,7 +407,7 @@ mf_layout(title = "Mean price per m²",
 ---
 
 .partie[02]
-# Smothing [1/4]
+# Smothing [1/3]
 
 
 **2.** spatial smoothing with `btb::btb_smooth`
@@ -402,7 +434,7 @@ sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / s
 ---
 
 .partie[02]
-# Lissage [2/4]
+# Smothing [2/3]
 
 
 
@@ -411,7 +443,6 @@ sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / s
 
 ```{r showSmoothed,  echo=FALSE}
 kbl(sfCarrLiss_paris[1:50,]) %>%
-  kable_styling(bootstrap_options = "striped", font_size = 7) %>% 
   scroll_box(width = "500px", height = "500px")
 ```
 
@@ -445,79 +476,70 @@ mf_layout(title = "Smoothed prices (400m bandwidth)",
 ---
 
 .partie[02]
-# Lissage [3/4]
+# Smothing [3/3]
 
-
-.pull-left[
-## Faire varier le rayon de lissage (1000m)
-]
-
-.pull-right[
-
-```{r resLissage1000ssGrille, echo=FALSE, eval=F}
-dataLissage <- sfBase_filtre[,c("nbObsLisse")]
-sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
-                                    sEPSG = "2154",
-                                    iCellSize = 200, 
-                                    iBandwidth = 1000)
-# Filtrage des carreaux lissés dans Paris
-sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
-
-mf_init(x=sfCarrLiss_paris,theme = "agolalight")
-mf_map(x = sfCarrLiss_paris, 
-       type = "choro",
-       var="nbObsLisse",
-       breaks = "quantile",
-       nbreaks = 5,
-       border = NA, # C'est ici que ça se passe
-       # lwd=1,
-       add = TRUE)
-mf_map(x = contourParis, 
-       lwd=4,
-       col="black",add = TRUE)
-mf_layout(title = "Lissage avec rayon de 1000m",
-          credits = "Insee-DSAU, DGFiP, Etalab, IGN, mapsf")
-```
-]
-
----
-
-.partie[02]
-# Lissage [4/4]
+## Possible with different bandwidths
 
 .pull-left[
 
-## Faire varier la taille des carreaux (50m)
 
-- **Trop gros carreaux = effet granuleux** : arètes des carreaux visibles 
-- **Trop petits carreaux = Temps de calcul important**
-]
-.pull-right[
-
-```{r reslissPetitscarr, eval=F, echo=T}
-dataLissage <- sfBase_filtre[,c("nbObsLisse")]
+```{r resLissAuto800, echo=FALSE, eval=TRUE}
 sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
-                                    sEPSG = "2154",
                                     iCellSize = 50, 
-                                    iBandwidth = 1000)
-# Filtrage des carreaux lissés dans Paris
-sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
+                                    iBandwidth = 800)
 
+sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
+sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
+
+# Carte lissée
 mf_init(x=sfCarrLiss_paris,theme = "agolalight")
 mf_map(x = sfCarrLiss_paris, 
        type = "choro",
-       var="nbObsLisse",
+       var="smooth_price",
        breaks = "quantile",
+       border = NA, 
        nbreaks = 5,
-       border = NA,
+       lwd=1,
        add = TRUE)
 mf_map(x = contourParis, 
        lwd=4,
        col="black",add = TRUE)
-mf_layout(title = "Lissage avec pas de 50m",
+mf_layout(title = "Smoothed prices (800m bandwidth)",
           credits = "Insee-DSAU, DGFiP, Etalab, IGN, mapsf")
 ```
+
 ]
+
+.pull-right[
+
+
+```{r resLissAuto1200, echo=FALSE, eval=TRUE}
+sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
+                                    iCellSize = 50, 
+                                    iBandwidth = 1200)
+
+sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
+sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
+
+# Carte lissée
+mf_init(x=sfCarrLiss_paris,theme = "agolalight")
+mf_map(x = sfCarrLiss_paris, 
+       type = "choro",
+       var="smooth_price",
+       breaks = "quantile",
+       border = NA, 
+       nbreaks = 5,
+       lwd=1,
+       add = TRUE)
+mf_map(x = contourParis, 
+       lwd=4,
+       col="black",add = TRUE)
+mf_layout(title = "Smoothed prices (1200m bandwidth)",
+          credits = "Insee-DSAU, DGFiP, Etalab, IGN, mapsf")
+```
+
+]
+
 
 ---
 
@@ -527,6 +549,7 @@ mf_layout(title = "Lissage avec pas de 50m",
 Faire une slide sur lissage quantile ?
 
 ---
+
 .partie[02]
 # Thank you for your attention !
 
