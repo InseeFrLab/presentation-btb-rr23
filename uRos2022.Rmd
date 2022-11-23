@@ -419,16 +419,16 @@ For example, it seems that prices are much higher in the center and the west tha
 
 **2.** Spatial smoothing with `btb::btb_smooth`
 <small>
--   `pts` : table of points with only numeric variable (geometric object or not) ;
+-   `pts` : table of points with only numeric variables (geometric object or not) ;
 -   `iCellSize` : cell size in meters (granularity of the underlying grid) ;
 -   `iBandwidth` : smoothing bandwidth in meters.
 </small>
 
-```{r lissAuto400,  results='hide', eval=TRUE}
+```{r lissAuto800,  results='hide', eval=TRUE}
 pts <- sfBase_buffer[,c("valeur_fonciere","surface_reelle_bati")]
 smooth_result <- btb::btb_smooth(pts = pts, 
                               iCellSize = 50, 
-                              iBandwidth = 400)
+                              iBandwidth = 800)
 ```
 
 ```{r showSmoothed1,  echo=FALSE,out.height="100px"}
@@ -444,11 +444,14 @@ We'll use the btb_smooth function, the most important function of the BTB packag
 In this example, we only need 3 parameters : 
 ......
 
-Then : 
 - we select prices and surfaces for our sales
 - we smooth if
-- we calculate the smoothed ratio : the smoothed price per square meters
-- And, finally, we only keep the results in Paris using geographic intersection.
+
+Let's take a look at the output
+
+- This is a sf table, a table of geometric square cells
+- Price and surface variables have been smoothed.
+
 
 ---
 
@@ -485,7 +488,7 @@ smooth_result <- smooth_result %>%
 .pull-right[
 
 ## Map the result :
-```{r resLissAuto400, echo=FALSE, eval=TRUE}
+```{r resLissAuto800, echo=FALSE, eval=TRUE}
 
 # Carte lissée
 mf_init(x=smooth_result,theme = "agolalight")
@@ -500,11 +503,20 @@ mf_map(x = smooth_result,
 mf_map(x = contourParis, 
        lwd=4,
        col="black",add = TRUE)
-mf_layout(title = "Smoothed prices (400m bandwidth)",
+mf_layout(title = "Smoothed prices (800m bandwidth)",
           credits = "Insee-DSAU, DGFiP, Etalab, IGN, mapsf")
 ```
 
 ]
+
+???
+
+Then : 
+
+- we calculate the smoothed ratio : the smoothed price per square meters
+- And, finally, we only keep the results in Paris using geographic intersection.
+
+The map shows a spatially smoothed representation of prices for each square meters sold in Paris in 2021.
 
 
 ---
@@ -517,10 +529,10 @@ mf_layout(title = "Smoothed prices (400m bandwidth)",
 .pull-left[
 
 
-```{r resLissAuto800, echo=FALSE, eval=TRUE}
+```{r resLissAuto400, echo=FALSE, eval=TRUE}
 sfCarrLiss <- btb::btb_smooth(pts = pts, 
                                     iCellSize = 50, 
-                                    iBandwidth = 800)
+                                    iBandwidth = 400)
 
 smooth_result <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
 smooth_result <- smooth_result %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
@@ -538,7 +550,7 @@ mf_map(x = smooth_result,
 mf_map(x = contourParis, 
        lwd=4,
        col="black",add = TRUE)
-mf_layout(title = "Smoothed prices (800m bandwidth)",
+mf_layout(title = "Smoothed prices (400m bandwidth)",
           credits = "Insee-DSAU, DGFiP, Etalab, IGN, mapsf")
 ```
 
@@ -574,13 +586,10 @@ mf_layout(title = "Smoothed prices (1200m bandwidth)",
 
 ]
 
+???
 
----
+Depending weather you want structural or specific results, you can choose a wider or a smaller bandwidth.
 
-.partie[02]
-# Lissage quantile
-
-Faire une slide sur lissage quantile ?
 
 ---
 
