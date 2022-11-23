@@ -181,7 +181,7 @@ strong, b {
     }
 
 .inverse_sommaire .remark-slide-number::after {
-      content: "SOMMAIRE";
+      content: "CONTENTS"; /*KIM*/
       text-indent: 0;
       display: block;
       line-height: initial;
@@ -429,7 +429,7 @@ background-size: 100%;
 	opacity: 1;	
 }
 .partie::before {
-	content: "PARTIE ";
+	content: "PART "; /*KIM*/
 }
 
 p {

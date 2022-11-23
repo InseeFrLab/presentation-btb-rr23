@@ -7,7 +7,7 @@ date: ""
 output:
   xaringan::moon_reader:
     css: ["css/default.css", 
-          "css/insee_vert.css",
+          "css/insee_jaune.css",
           "css/insee_commun.css", 
           "css/insee_fonts.css"]
     self_contained : FALSE 
@@ -89,7 +89,7 @@ non-parametric estimation method for the intensity function of a point process w
 
 ➡️ Often, **Fast Fourier Transform**.
 
-Not suitable for **border effects**
+Not suitable for **edge effects**
 
 
 </br>
@@ -174,27 +174,6 @@ class: inverse
 .NumeroPartie[02]
 .TitrePartie[Example: the housing prices in Paris in 2021]
 
----
-
-.partie[02]
-# Find BTB
-
-## BTB available on Cran and Github
-
-```{r,eval=F}
-install.packages("btb")
-```
-
-## Find all the documentation you need
-
-Please visit BTB website : 
-
-➡️ https://inseefr.github.io/btb/
-
-
-## And do not hesitate to contact us !
-
-➡️  psar-au@insee.fr
 
 ---
 
@@ -275,8 +254,10 @@ mapview(suburbs_sf$geometry)
 ```{r, eval=TRUE, echo=TRUE}
 url_file <- url("https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/ventesImmo_couronneParis.RDS")
 dfBase <- readRDS(url_file)
-dfBase <- dfBase[,c("id_mutation","valeur_fonciere","surface_reelle_bati","x","y")]
-
+dfBase <- dfBase[,c("id_mutation",
+                    "valeur_fonciere",
+                    "surface_reelle_bati",
+                    "x","y")]
 ```
 
 ```{r, echo=F}
@@ -294,7 +275,8 @@ Secondly, we import our sales data and we select the useful variables.
 ---
 
 .partie[02]
-# Select data et deals with edge effects
+
+# Selecting data and dealing with edge effects
 
 .pull-left[
 **1.**  Transform observations into geometric points
@@ -345,7 +327,7 @@ Here, we are only interested about prices inside Paris Town.
 Anyway, it can be important (and sometimes mandatory) to use data beyond the very border of your studied zone. Otherwise, it can generate artifacts on the edge of this zone.
 
 That's why we'll smooth the sales in Paris plus a buffer (here  2000 meters).
-On the left, you can a way to handle it. 
+On the left, you can see a way to handle it. 
 
 ---
 
@@ -359,7 +341,7 @@ On the left, you can a way to handle it.
   + `btb_add_centroids`
   + `btb_ptsToGrid`
 
-➡️ Let's calculate the mean price per square meters (among 2021 sells) : 
+➡️ Let's calculate the mean price per square meters (among 2021 sales) : 
 
 ]
 
@@ -445,7 +427,7 @@ In this example, we only need 3 parameters :
 ......
 
 - we select prices and surfaces for our sales
-- we smooth if
+- we smooth it
 
 Let's take a look at the output
 
@@ -467,7 +449,7 @@ Let's take a look at the output
 ```{r getprice}
 smooth_result <- smooth_result %>% 
   mutate(smooth_price=
-           valeur_fonciere / surface_reelle_bati)
+    valeur_fonciere / surface_reelle_bati)
 ```
 
 
@@ -488,7 +470,7 @@ smooth_result <- smooth_result %>%
 .pull-right[
 
 ## Map the result :
-```{r resLissAuto800, echo=FALSE, eval=TRUE}
+```{r resLissAuto800, echo=FALSE, eval=TRUE, fig.height=5}
 
 # Carte lissée
 mf_init(x=smooth_result,theme = "agolalight")
@@ -499,6 +481,7 @@ mf_map(x = smooth_result,
        border = NA, # C'est ici que ça se passe
        nbreaks = 5,
        lwd=1,
+       leg_pos="topright",
        add = TRUE)
 mf_map(x = contourParis, 
        lwd=4,
@@ -529,7 +512,7 @@ The map shows a spatially smoothed representation of prices for each square mete
 .pull-left[
 
 
-```{r resLissAuto400, echo=FALSE, eval=TRUE}
+```{r resLissAuto400, echo=FALSE, eval=TRUE, fig.height=5}
 sfCarrLiss <- btb::btb_smooth(pts = pts, 
                                     iCellSize = 50, 
                                     iBandwidth = 400)
@@ -546,6 +529,7 @@ mf_map(x = smooth_result,
        border = NA, 
        nbreaks = 5,
        lwd=1,
+       leg_pos="topright",
        add = TRUE)
 mf_map(x = contourParis, 
        lwd=4,
@@ -559,7 +543,7 @@ mf_layout(title = "Smoothed prices (400m bandwidth)",
 .pull-right[
 
 
-```{r resLissAuto1200, echo=FALSE, eval=TRUE}
+```{r resLissAuto1200, echo=FALSE, eval=TRUE, fig.height=5}
 sfCarrLiss <- btb::btb_smooth(pts = pts, 
                                     iCellSize = 50, 
                                     iBandwidth = 1200)
@@ -576,6 +560,7 @@ mf_map(x = smooth_result,
        border = NA, 
        nbreaks = 5,
        lwd=1,
+       leg_pos="topright",
        add = TRUE)
 mf_map(x = contourParis, 
        lwd=4,
@@ -588,19 +573,40 @@ mf_layout(title = "Smoothed prices (1200m bandwidth)",
 
 ???
 
-Depending weather you want structural or specific results, you can choose a wider or a smaller bandwidth.
+Depending whether you want structural or specific results, you can choose a wider or a smaller bandwidth.
 
 
 ---
 
 .partie[02]
-# Thank you for your attention !
+# Find BTB
 
-<center>
-<img src="images/logo.png"></img>
-</br>
-<a>https://github.com/InseeFr/btb</a>
-</center>
+
+.pull-left[
+
+## `btb` available on CRAN and Github
+
+```{r,eval=F}
+install.packages("btb")
+```
+
+## Find all the documentation you need
+
+Please visit `btb` website : 
+
+➡️ https://inseefr.github.io/btb/
+
+
+## And do not hesitate to contact us !
+
+➡️  psar-au@insee.fr
+]
+
+.pull-right[
+## Thank you for your attention !
+
+![](images/logo.png)
+]
 
 ---
 class: thanks, center, middle
