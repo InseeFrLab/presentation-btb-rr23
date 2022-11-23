@@ -294,7 +294,7 @@ Secondly, we import our sales data and we select the useful variables.
 ---
 
 .partie[02]
-# Select data
+# Select data et deals with edge effects
 
 .pull-left[
 **1.**  Transform observations into geometric points
@@ -317,7 +317,7 @@ buffer_sf <- st_buffer(paris_sf,dist = 2000)
 **3.** Geographical intersection
 
 ```{r selectDonnee2c, eval=TRUE}
-sfBase_filtre <- st_join(sfBase, buffer_sf,
+sfBase_buffer <- st_join(sfBase, buffer_sf,
                          left=FALSE)
 ```
 ]
@@ -328,7 +328,7 @@ sfBase_filtre <- st_join(sfBase, buffer_sf,
 buffer_sf$nom <- "buffer"
 buffer_line <- buffer_sf %>% st_cast("MULTILINESTRING")
 # Échantillon de 2000 observations dans le buffer
-sfBase_sample <- sfBase_filtre[sample(1:nrow(sfBase_filtre),2000) ,]
+sfBase_sample <- sfBase_buffer[sample(1:nrow(sfBase_buffer),2000) ,]
 # Cartographie pédagogique avec mapview
 mapview(paris_sf ,col.regions= "#26cce7")+
   mapview(buffer_line,color="#FFC300",lwd=6)+
@@ -339,10 +339,13 @@ mapview(paris_sf ,col.regions= "#26cce7")+
 
 
 ???
-On crée une zone tampon (buffer) autour du territoire d'intérêt, avec une marge (ici 2 000m), sous la forme d'un objet `sf` vectoriel.
-Remarque: Pour la zone tampon, prendre une marge légèrement plus grande que le rayon de lissage envisagé.
- On repère les observations comprises dans cette zone tampon par intersection géographique.
 
+Handling potential edge effects is an important part of spatial smoothing. 
+Here, we are only interested about prices inside Paris Town.
+Anyway, it can be important (and sometimes mandatory) to use data beyond the very border of your studied zone. Otherwise, it can generate artifacts on the edge of this zone.
+
+That's why we'll smooth the sales in Paris plus a buffer (here  2000 meters).
+On the left, you can a way to handle it. 
 
 ---
 
@@ -364,8 +367,7 @@ Remarque: Pour la zone tampon, prendre une marge légèrement plus grande que le
 
 ```{r carroyage, eval=TRUE,include=FALSE}
 iCellSize = 200 # Square of 200 meters
-points_carroyage <- btb::btb_add_centroids(pts = sfBase_filtre,iCellSize = iCellSize) 
-
+points_carroyage <- btb::btb_add_centroids(pts = sfBase_buffer,iCellSize = iCellSize) 
 points_centroides <- points_carroyage %>%
   st_drop_geometry() %>% 
   group_by(x_centro,y_centro) %>% 
@@ -373,14 +375,10 @@ points_centroides <- points_carroyage %>%
             sum_price=sum(valeur_fonciere)) %>% 
   ungroup() %>% 
   mutate(price_per_sqrmeter=sum_price/sum_surf)
-
 carreaux <- btb::btb_ptsToGrid(pts = points_centroides,
                           sEPSG = "2154", iCellSize = iCellSize)
-
 carreaux <- carreaux %>% st_join(paris_sf,left=F)
 ```
-
-
 
 ```{r carroyage5, eval=TRUE, echo=FALSE}
 
@@ -403,6 +401,15 @@ mf_layout(title = "Mean price per m²",
 ```
 ]
 
+???
+
+Now, you could directly smooth your data and get the result.
+But, to better understand your data, you can use a grid and calculate mean prices inside all the cells (here with 50 meters squares).
+
+The package makes it very easy using the following functions. 
+
+The result is far from synthetic (and beautiful) : but still, it's a first insight !
+For example, it seems that prices are much higher in the center and the west than on the borders of the city and on the north east.
 
 ---
 
@@ -410,26 +417,38 @@ mf_layout(title = "Mean price per m²",
 # Smothing [1/3]
 
 
-**2.** spatial smoothing with `btb::btb_smooth`
+**2.** Spatial smoothing with `btb::btb_smooth`
 <small>
--   `pts` : table of points with only numeric values (geometric object or not) ;
--   `sEPSG` : EPSG code (not always necessary) ;
--   `iCellSize` : cell size in meters ;
+-   `pts` : table of points with only numeric variable (geometric object or not) ;
+-   `iCellSize` : cell size in meters (granularity of the underlying grid) ;
 -   `iBandwidth` : smoothing bandwidth in meters.
 </small>
 
 ```{r lissAuto400,  results='hide', eval=TRUE}
-dataLissage <- sfBase_filtre[,c("valeur_fonciere","surface_reelle_bati")]
-sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
-                                    iCellSize = 50, 
-                                    iBandwidth = 400)
+pts <- sfBase_buffer[,c("valeur_fonciere","surface_reelle_bati")]
+smooth_result <- btb::btb_smooth(pts = pts, 
+                              iCellSize = 50, 
+                              iBandwidth = 400)
 ```
 
-```{r filtreParis}
-sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
-sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
+```{r showSmoothed1,  echo=FALSE,out.height="100px"}
+kbl(smooth_result[1:50,]) %>%
+  scroll_box(height = "200px")
 ```
 
+???
+
+Now, let's smooth your data.
+We'll use the btb_smooth function, the most important function of the BTB package. 
+
+In this example, we only need 3 parameters : 
+......
+
+Then : 
+- we select prices and surfaces for our sales
+- we smooth if
+- we calculate the smoothed ratio : the smoothed price per square meters
+- And, finally, we only keep the results in Paris using geographic intersection.
 
 ---
 
@@ -439,12 +458,27 @@ sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / s
 
 
 .pull-left[
-## Take a look at smoothed data 
+## Get the smoothed prices per m²
 
-```{r showSmoothed,  echo=FALSE}
-kbl(sfCarrLiss_paris[1:50,]) %>%
-  scroll_box(width = "500px", height = "500px")
+
+```{r getprice}
+smooth_result <- smooth_result %>% 
+  mutate(smooth_price=
+           valeur_fonciere / surface_reelle_bati)
 ```
+
+
+## Only keep the cells inside Paris
+
+```{r filtreParis}
+smooth_result <- smooth_result %>% 
+  st_join(paris_sf[,"geometry"],left=F)
+```
+
+<!-- ```{r showSmoothed,  echo=FALSE} -->
+<!-- kbl(smooth_result[1:50,]) %>% -->
+<!--   scroll_box(width = "500px", height = "500px") -->
+<!-- ``` -->
 
 ]
 
@@ -454,8 +488,8 @@ kbl(sfCarrLiss_paris[1:50,]) %>%
 ```{r resLissAuto400, echo=FALSE, eval=TRUE}
 
 # Carte lissée
-mf_init(x=sfCarrLiss_paris,theme = "agolalight")
-mf_map(x = sfCarrLiss_paris, 
+mf_init(x=smooth_result,theme = "agolalight")
+mf_map(x = smooth_result, 
        type = "choro",
        var="smooth_price",
        breaks = "quantile",
@@ -484,16 +518,16 @@ mf_layout(title = "Smoothed prices (400m bandwidth)",
 
 
 ```{r resLissAuto800, echo=FALSE, eval=TRUE}
-sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
+sfCarrLiss <- btb::btb_smooth(pts = pts, 
                                     iCellSize = 50, 
                                     iBandwidth = 800)
 
-sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
-sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
+smooth_result <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
+smooth_result <- smooth_result %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
 
 # Carte lissée
-mf_init(x=sfCarrLiss_paris,theme = "agolalight")
-mf_map(x = sfCarrLiss_paris, 
+mf_init(x=smooth_result,theme = "agolalight")
+mf_map(x = smooth_result, 
        type = "choro",
        var="smooth_price",
        breaks = "quantile",
@@ -514,16 +548,16 @@ mf_layout(title = "Smoothed prices (800m bandwidth)",
 
 
 ```{r resLissAuto1200, echo=FALSE, eval=TRUE}
-sfCarrLiss <- btb::btb_smooth(pts = dataLissage, 
+sfCarrLiss <- btb::btb_smooth(pts = pts, 
                                     iCellSize = 50, 
                                     iBandwidth = 1200)
 
-sfCarrLiss_paris <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
-sfCarrLiss_paris <- sfCarrLiss_paris %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
+smooth_result <- sfCarrLiss %>% st_join(paris_sf[,"geometry"],left=F)
+smooth_result <- smooth_result %>% mutate(smooth_price=valeur_fonciere / surface_reelle_bati)
 
 # Carte lissée
-mf_init(x=sfCarrLiss_paris,theme = "agolalight")
-mf_map(x = sfCarrLiss_paris, 
+mf_init(x=smooth_result,theme = "agolalight")
+mf_map(x = smooth_result, 
        type = "choro",
        var="smooth_price",
        breaks = "quantile",
