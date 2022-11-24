@@ -30,7 +30,7 @@ jobs:
           Rscript -e 'install.packages("rgeos", repos="http://R-Forge.R-project.org", type="source")'
           Rscript -e 'install.packages("rgdal", repos="http://R-Forge.R-project.org", type="source")'
           Rscript -e 'install.packages("sf", type = "mac.binary")'
-          Rscript -e 'install.packages(c("rmarkdown","xaringan","xaringanExtra","mapview"))' 
+          Rscript -e 'install.packages(c("rmarkdown","xaringan","xaringanExtra","mapview","magrittr","dplyr"))' 
 
       - name: Render Rmd
         run: |
