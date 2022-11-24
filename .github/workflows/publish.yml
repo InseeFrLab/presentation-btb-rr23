@@ -35,6 +35,7 @@ jobs:
       - name: Render Rmd
         run: |
           Rscript -e "rmarkdown::render('uRos2022.Rmd')"
+          sed -i 's/https:\/\/mathjax.rstudio.com\/latest/doc_passation_files\/mathjax-local/g' uRos2022.html
       - name: Publish html
         run: |
           mkdir build
