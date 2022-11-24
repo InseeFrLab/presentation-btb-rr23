@@ -30,12 +30,11 @@ jobs:
           Rscript -e 'install.packages("rgeos", repos="http://R-Forge.R-project.org", type="source")'
           Rscript -e 'install.packages("rgdal", repos="http://R-Forge.R-project.org", type="source")'
           Rscript -e 'install.packages("sf", type = "mac.binary")'
-          Rscript -e 'install.packages(c("rmarkdown","xaringan","xaringanExtra","mapview","magrittr","dplyr","kableExtra"))' 
+          Rscript -e 'install.packages(c("rmarkdown","xaringan","xaringanExtra","mapview"))' 
 
       - name: Render Rmd
         run: |
           Rscript -e "rmarkdown::render('uRos2022.Rmd')"
-          sed -i 's/https:\/\/mathjax.rstudio.com\/latest/doc_passation_files\/mathjax-local/g' uRos2022.html
       - name: Publish html
         run: |
           mkdir build
