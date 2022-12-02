@@ -183,15 +183,15 @@ class: inverse
 
 ## « [**D**emandes de **V**aleurs **F**oncières](https://www.data.gouv.fr/fr/datasets/demandes-de-valeurs-foncieres-geolocalisees/) »,
 
-- Real-estate sales database (houses and apartments)
+- Real-estate transactions database (houses and apartments)
 - In 2021
 - Paris region
-- Geolocalized (1 sale = 1 geographic point)
+- Geolocalized (1 transaction = 1 geographic point)
 
 Variables used in the following example : 
 
--   `id_mutation` : id for each sale
--   `valeur_fonciere` : price
+-   `id_mutation` : id for each transaction
+-   `valeur_fonciere` : price in euros
 -   `surface_reelle_bati` : surface in square meters
 -   `x` : longitude (**Lambert 93 projection**)
 -   `y` : latitude (**Lambert 93 projection **)
@@ -199,8 +199,8 @@ Variables used in the following example :
 ???
 
 In this example, we will extract our data from the source "Demande de valeur foncière".
-This source gives information about real estate sales in France.
-In particular, the sales are geolocalized thanks to the longitude and latitude variables.
+This source gives information about real estate transactions in France.
+In particular, the transactions are geolocalized thanks to the longitude and latitude variables.
 
 We'll show how to smooth prices per square meters in the town of Paris in 2021. 
 
@@ -599,7 +599,7 @@ Please visit `btb` website :
 
 ## And do not hesitate to contact us !
 
-➡️  psar-au@insee.fr
+➡️  analyse-urbaine@insee.fr
 ]
 
 .pull-right[
