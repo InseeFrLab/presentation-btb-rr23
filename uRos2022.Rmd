@@ -71,10 +71,13 @@ consisting in describing the population environment within a given radius.
 
 
 ???
- 
-Spatial smoothing is a key method for analyzing spatial organization of data available at a small geographic level. Its aim is to provide simplified, clear mapping, relieved of the arbitrariness of territorial boundary lines ("Modifiable Area Units Problem" effect).
+There are many way of mapping geographical data. 
 
-non-parametric estimation method for the intensity function of a point process with observed values in R². The theoretical intensity function in one point x is found by calculating the average points observed per unit surface on neighbourhoods containing x 
+1) Usually, you can see maps of administrative territories. For example, counties and states in the US.  These non-regular divisions of space can lead to the modifiable areal unit problem effect. That is to say the fact that a spatial indicator is strongly influenced by both shape and scale of the aggregation unit.
+
+2) One solution is to map the data on a regular grid whose size depends on the phenomenon to be observed. Small grids make it possible to observe sub-municipal spatial phenomena, but the rendering can be visually erratic.
+
+3) Finally, spatial smoothing is a key method for analyzing spatial organization of data available at a small geographic level, by providing simplified and clearer mapping, relieved of the arbitrariness of territorial boundary lines.
 
 ---
 
@@ -109,19 +112,17 @@ Not suitable for **edge effects**
 ]
 
 ???
-Several R packages make it possible to perform smoothing. For example, the spatstat package dedicated to the analysis of spatial point processes is very complete. It includes a smoothing function (density.ppp) and various functions for choosing optimal bandwidths (bw.diggle, bw.frac...). 
 
-Often, these functions rely on a Fast Fourier Transform to calculate the convolution
-(mathematical name of smoothing). By construction, this process is not suitable for situations where border effects** are important...
+Several R packages make it possible to perform smoothing. [For example, the spatstat package dedicated to the analysis of spatial point processes is very complete. It includes a smoothing function (density.ppp) and various functions for choosing optimal bandwidths (bw.diggle, bw.frac...).]
 
-The btb ("beyond the border") R package, developed in 2018 by the French National Institute of Statistics and Economic Studies (Insee)
+Often, their functions rely on a Fast Fourier Transform to calculate the smoothing. But this process is not suitable for situations where edge effects are important...
 
-The btb package also makes it possible to use quantile smoothing, which has the advantage of being less sensitive to extreme values and thus enriches the analysis of some variables, in particular income variables.
+The btb R package was developed in 2018 by the French National Institute of Statistics and Economic Studies (Insee).
 
-R software is very polyvalent and has a very flexible grammar but
-on the other hand it is slow. To circumvent this limitation, the btb package has been developed
-in C++ using the `Rcpp` package. => We thus benefit from the R Syntax and the power of C++ with a relatively modest development cost.
+It deals with edge effects and also makes it possible to use quantile smoothing, which has the advantage of being less sensitive to extreme values [and thus enriches the analysis of some variables, in particular income variables.]
 
+[R software is very polyvalent and has a very flexible grammar but on the other hand it is slow. To circumvent this limitation,  ] The btb package has been developed
+in C++ using the Rcpp package. We thus benefit from the R Syntax and the power of C++ with a relatively modest development cost.
 
 ---
 
@@ -165,8 +166,21 @@ in C++ using the `Rcpp` package. => We thus benefit from the R Syntax and the po
 
 ???
 
-conservative method : before and after smoothing, the number of points observed is identical.
+[Spatial smoothing is a non-parametric estimation method for the intensity function of a point process with observed values in R².]
+In spatial smoothing, the intensity function in one point x is found by calculating the average points observed per unit surface on neighbourhoods containing x. 
 
+And you have to determine various parameters: 
+- the kernel which describes how the neighborhood is approached ;
+- the bandwidth which is the size of this neighborhood
+- the geographical level
+- and how to deal or not with edge effects.
+
+In btb
+- the kernel is quadratic
+- the variable can be chosen by the user
+- we use a squared grid with chosen size
+- and the edge effects are taken into account, using a conservative method : that is to say that before and after smoothing, the number of points observed is identical. 
+- 
 ---
 class: inverse
 
@@ -271,7 +285,8 @@ kableExtra::kbl(head(dfBase,5)) %>% scroll_box(width = "500px", height = "200px"
 First, we import layer to get Paris boundaries. 
 Here, you can see the 3 departments called Petite Couronne. It's the dense urbain area around the town of Paris (the polygon in the middle).
 
-Secondly, we import our sales data and we select the useful variables. 
+Secondly, we import our transactions data and we select the useful variables. 
+
 ---
 
 .partie[02]
@@ -326,7 +341,7 @@ Handling potential edge effects is an important part of spatial smoothing.
 Here, we are only interested about prices inside Paris Town.
 Anyway, it can be important (and sometimes mandatory) to use data beyond the very border of your studied zone. Otherwise, it can generate artifacts on the edge of this zone.
 
-That's why we'll smooth the sales in Paris plus a buffer (here  2000 meters).
+That's why we'll smooth the transactions in Paris plus a buffer (here 2000 meters).
 On the left, you can see a way to handle it. 
 
 ---
@@ -341,7 +356,7 @@ On the left, you can see a way to handle it.
   + `btb_add_centroids`
   + `btb_ptsToGrid`
 
-➡️ Let's calculate the mean price per square meters (among 2021 sales) : 
+➡️ Let's calculate the mean price per square meters (among 2021 transactions) 
 
 ]
 
@@ -396,10 +411,10 @@ For example, it seems that prices are much higher in the center and the west tha
 ---
 
 .partie[02]
-# Smothing [1/3]
+# Smoothing [1/3]
 
+## Spatial smoothing with `btb::btb_smooth`
 
-**2.** Spatial smoothing with `btb::btb_smooth`
 <small>
 -   `pts` : table of points with only numeric variables (geometric object or not) ;
 -   `iCellSize` : cell size in meters (granularity of the underlying grid) ;
@@ -426,7 +441,7 @@ We'll use the btb_smooth function, the most important function of the BTB packag
 In this example, we only need 3 parameters : 
 ......
 
-- we select prices and surfaces for our sales
+- we select prices and surfaces for our transactions
 - we smooth it
 
 Let's take a look at the output
@@ -438,7 +453,7 @@ Let's take a look at the output
 ---
 
 .partie[02]
-# Smothing [2/3]
+# Smoothing [2/3]
 
 
 
@@ -469,7 +484,7 @@ smooth_result <- smooth_result %>%
 
 .pull-right[
 
-## Map the result :
+## Map the result
 ```{r resLissAuto800, echo=FALSE, eval=TRUE, fig.height=5}
 
 # Carte lissée
@@ -505,7 +520,7 @@ The map shows a spatially smoothed representation of prices for each square mete
 ---
 
 .partie[02]
-# Smothing [3/3]
+# Smoothing [3/3]
 
 ## Possible with different bandwidths
 
