@@ -637,7 +637,7 @@ class: thanks, center, middle
 Kim Antunez <br>
 Julien Pramil <br>
 Insee, France <br>
-<psar-au@insee.fr>
+<analyse-urbaine@insee.fr>
 
 ```
 
