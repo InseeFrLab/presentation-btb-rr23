@@ -1,7 +1,7 @@
 ---
 title: "<b>B</b>eyond <b>T</b>he <b>B</b>order</img>"
-subtitle: "Spatial smoothing with R</br><img src='images/logo-grey.png' style='height:90px'>"
-author: "The Use of R in Official Statistics (uRos), december 2022"
+subtitle: "Lissage spatial avec R</br><img src='images/logo-grey.png' style='height:90px'>"
+author: "Rencontres R, Avignon 2023"
 institute: ""
 date: ""
 output:
@@ -31,8 +31,8 @@ class: inverse_sommaire, middle
 
 | Numéro|Partie |
 |-------|-------|
-| 01| Spatial smoothing with `R` |
-| 02| Example: the housing prices in Paris in 2021 |
+| 01| Lissage spatial avec `R` |
+| 02| Exemple : Les prix immobiliers à Paris en 2021 |
 
 
 ---
@@ -40,14 +40,14 @@ class: inverse
 
 .partie[01]
 .NumeroPartie[01]
-.TitrePartie[Spatial smoothing with `R`]
+.TitrePartie[Lissage spatial avec `R`]
 
 ---
 
 .partie[01]
 # Introduction
 
-## 3 ways of mapping geographical data
+## 3 manières de cartographier les données géographiques
 
 .left-column[
 ![](images/3ways.png)
@@ -57,15 +57,11 @@ class: inverse
 .right-column[
 
 
-1. **The territory**: a non-regular division of space. Several
-difficulties: mainly the Modifiable areal unit problem (MAUP) effect ;</br></br></br>
+1. **Le territoire** : une partition irrégulière de l'espace. Plusieurs difficultés : essentiellement l'effet **MAUP** (*Modifiable areal unit problem*);</br></br></br>
 
-2. **The grid**: a regular division of space in the form
-of a grid of square cells. By construction, the
-gridded data can be very erratic ; </br></br></br>
+2. **La grille carroyée** : un découpage régulier de l'espace en carreaux. Par construction, ces données peuvent être très erratiques ; </br></br></br>
 
-3. **Spatial smoothing**: an extension of gridding
-consisting in describing the population environment within a given radius.
+3. **Lissage spatial** : une extension du carroyage consistant à décrire l'environnement d'une population dans un rayon donné.
 ]
 
 
@@ -82,34 +78,32 @@ There are many way of mapping geographical data.
 ---
 
 .partie[01]
-# btb R package
+# Le package btb
 
-.pull-left[
-## Existing packages
+.left-column[
+![](images/logo.png)
+]
+
+.right-column[
+## Autres packages existants
 
 + `KernSmooth`
 + `spatstat`... 
 
-➡️ Often, **Fast Fourier Transform**.
+➡️ Généralement, **Transformée de Fourier Rapide**.
 
-Not suitable for **edge effects**
-
+Pas adapté à la gestion des **effets de bord** en analyse urbaine
 
 </br>
 
 ## btb
 
-+ developed in 2018 (Insee, France)
-
-+ deals with edge effects
-
-+ allows quantile smoothing (less sensitive to extreme values)
-
-+ developed in C++ (`Rcpp`)
++ Développé en 2018, par l'Insee
++ Gère les effets de bord
++ Lissage quantile (plus robuste, distributions lissées)
++ Développé en C++ (`Rcpp`)
 ]
-.pull-right[
-![](images/logo.png)
-]
+
 
 ???
 

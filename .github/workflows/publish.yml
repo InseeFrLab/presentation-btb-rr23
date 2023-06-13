@@ -34,12 +34,12 @@ jobs:
 
       - name: Render Rmd
         run: |
-          Rscript -e "rmarkdown::render('uRos2022.Rmd')"
+          Rscript -e "rmarkdown::render('slides.Rmd')"
       - name: Publish html
         run: |
           mkdir build
-          cp uRos2022.html build
-          cp -r images libs css uRos2022_files build
+          cp slides.html build
+          cp -r images libs css slides_files build
       - name: Push to gh-pages branch
         uses: crazy-max/ghaction-github-pages@v2
         with:
