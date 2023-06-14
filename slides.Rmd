@@ -92,12 +92,12 @@ Il existe d'autres packages de lissage :
 
 --
 
-Mais pour l'analyse urbaine :
+Mais...
 
-+ Besoin de lissage **conservatif** ;
-+ Besoin de pouvoir **imposer une zone de lissage** (pas de taux de pauvreté dans la mer !) ;
-+ Besoin de faire du « lissage quantile » ;
-+ Besoin d'algorithmes rapides.
++ Souhait de lissage **conservatif** ;
++ Souhait de pouvoir mobiliser une grille de carreaux de la taille de son choix ;+ Souhait de pouvoir **imposer une zone de lissage** (pas de taux de pauvreté dans la mer !) ;
++ Souhait de faire du « lissage quantile » ;
++ Souhait d'algorithmes rapides.
 
 ---
 
@@ -144,7 +144,7 @@ in C++ using the Rcpp package. We thus benefit from the R Syntax and the power o
 
 **Les hypothèses de lissage**
 
-  + Une **fonction kernel** indiquant la manière d'approcher le voisinage ;
+  + Un **noyau** (*kernel*) indiquant la manière d'approcher le voisinage ;
   
   + Le **rayon de lissage** quantifiant la taille du voisinage (arbitrage biais/variance) ;
   
