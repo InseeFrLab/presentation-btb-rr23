@@ -32,7 +32,7 @@ class: inverse_sommaire, middle
 | Numéro|Partie |
 |-------|-------|
 | 01| Lissage spatial avec `R` |
-| 02| Exemple : Les prix immobiliers à Paris en 2021 |
+| 02| Exemple : les prix immobiliers à Paris en 2021 |
 
 
 ---
@@ -57,7 +57,7 @@ class: inverse
 .right-column[
 
 
-1. **Le territoire** : une partition irrégulière de l'espace. Plusieurs difficultés : essentiellement l'effet **MAUP** (*Modifiable areal unit problem*);</br></br></br>
+1. **Le territoire** : une partition irrégulière de l'espace. Plusieurs difficultés : essentiellement l'effet **MAUP** (*Modifiable areal unit problem*) ;</br></br></br>
 
 2. **La grille carroyée** : un découpage régulier de l'espace en carreaux. Par construction, ces données peuvent être très erratiques ; </br></br></br>
 
@@ -75,7 +75,32 @@ There are many way of mapping geographical data.
 
 3) Finally, spatial smoothing is a key method for analyzing spatial organization of data available at a small geographic level, by providing simplified and clearer mapping, relieved of the arbitrariness of territorial boundary lines.
 
+
 ---
+
+.partie[01]
+# Le package btb
+
+## Pourquoi avoir développé BTB ?
+
+--
+
+Il existe d'autres packages de lissage : 
+
++ `KernSmooth`
++ `spatstat`... 
+
+--
+
+Mais pour l'analyse urbaine :
+
++ Besoin de lissage **conservatif** ;
++ Besoin de pouvoir **imposer une zone de lissage** (pas de taux de pauvreté dans la mer !) ;
++ Besoin de faire du « lissage quantile » ;
++ Besoin d'algorithmes rapides.
+
+---
+
 
 .partie[01]
 # Le package btb
@@ -85,23 +110,15 @@ There are many way of mapping geographical data.
 ]
 
 .right-column[
-## Autres packages existants
-
-+ `KernSmooth`
-+ `spatstat`... 
-
-➡️ Généralement, **Transformée de Fourier Rapide**.
-
-Pas adapté à la gestion des **effets de bord** en analyse urbaine
-
-</br>
 
 ## btb
 
 + Développé en 2018, par l'Insee
-+ Gère les effets de bord
-+ Lissage quantile (plus robuste, distributions lissées)
-+ Développé en C++ (`Rcpp`)
++ Package R
++ Cœur écrit en C++ (Rcpp)
+
+➡️ Répond aux contraintes de l'analyse urbaine 
+
 ]
 
 
@@ -121,40 +138,40 @@ in C++ using the Rcpp package. We thus benefit from the R Syntax and the power o
 ---
 
 .partie[01]
-# Spatial smoothing
+# Le lissage spatial
 
 .pull-left[
 
-**Choice of parameters**
+**Les hypothèses de lissage**
 
-  + The **kernel** describes how the neighborhood is approached ;
+  + Une **fonction kernel** indiquant la manière d'approcher le voisinage ;
   
-  + The **bandwidth** quantifies the "size" of this neighborhood (to be chosen according to a bias/variance trade-off) ;
+  + Le **rayon de lissage** quantifiant la taille du voisinage (arbitrage biais/variance) ;
   
-  + The **geographical level** from which the smoothed values are estimated ;
+  + La **résolution** ou le nombre de points sur lesquels des valeurs lissées seront estimées ;
   
-  + The **treatment of edge effects** makes explicit how geographical boundaries and the limits of observation territory are taken into account in the analysis.
+  + La **gestion des effets de bord**, pour expliciter la manière dont les frontières géographiques et la zone d'observation sont prises en compte dans le lissage.
 
 ]
 
 --
 
 .pull-right[
-**In btb...**
+**Dans btb...**
  
-  + _**quadratic kernel** estimation method_
+  + Méthode d'estimatation par _**noyau quadratique**_
   
   </br> 
   
-  + _a **variable bandwidth**_
+  + Un paramètre de rayon de lissage
   
    </br>
   
-  +  _**square** whose size can be chosen_
+  +  Un paramètre de _**taille des carreaux**_
   
    </br>
   
-  + _taken into account. **conservative method**_
+  + _Pris en compte. **Méthode conservative**_
 ]
 
 
@@ -180,29 +197,29 @@ class: inverse
 
 .partie[02]
 .NumeroPartie[02]
-.TitrePartie[Example: the housing prices in Paris in 2021]
+.TitrePartie[Exemple : les prix immobiliers à Paris en 2021]
 
 
 ---
 
 .partie[02]
-# Database
+# La base de données
 
 
 ## « [**D**emandes de **V**aleurs **F**oncières](https://www.data.gouv.fr/fr/datasets/demandes-de-valeurs-foncieres-geolocalisees/) »,
 
-- Real-estate transactions database (houses and apartments)
-- In 2021
-- Paris region
-- Geolocalized (1 transaction = 1 geographic point)
+- Base de données des transactions immobilières (maisons et appartements)
+- En 2021
+- Région parisienne
+- Géolocalisée (1 transaction = 1 point géographique)
 
-Variables used in the following example : 
+Variables utilisées dans notre exemple : 
 
--   `id_mutation` : id for each transaction
--   `valeur_fonciere` : price in euros
--   `surface_reelle_bati` : surface in square meters
--   `x` : longitude (**Lambert 93 projection**)
--   `y` : latitude (**Lambert 93 projection **)
+-   `id_mutation` : identifiant de chaque transaction
+-   `valeur_fonciere` : prix en euros
+-   `surface_reelle_bati` : surface en m²
+-   `x` : longitude (**projection Lambert 93**)
+-   `y` : latitude (**projection Lambert 93**)
 
 ???
 
@@ -232,10 +249,10 @@ package.check <- lapply(
 ---
 
 .partie[02]
-# Load data
+# Chargement des données
 
 .pull-left[
-## Load map layer
+## Chargement des fonds de carte
 
 
 ```{r, eval=T, echo=TRUE, warning=FALSE,message=FALSE,results = 'hide'}
@@ -257,7 +274,7 @@ mapview(suburbs_sf$geometry)
 
 .pull-right[
 
-## Load database
+## Chargement des données
 
 ```{r, eval=TRUE, echo=TRUE}
 url_file <- url("https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/ventesImmo_couronneParis.RDS")
@@ -285,10 +302,10 @@ Secondly, we import our transactions data and we select the useful variables.
 
 .partie[02]
 
-# Selecting data and dealing with edge effects
+# Filtrer les données et gérer les effets de bord
 
 .pull-left[
-**1.**  Transform observations into geometric points
+**1.**  Transformation des observations en points géométriques
 
 ```{r selectDonnee2a, eval=TRUE}
 sfBase <- sf::st_as_sf(dfBase,
@@ -297,7 +314,7 @@ sfBase <- sf::st_as_sf(dfBase,
 ```
 
 
-**2.**  Buffer zone
+**2.**  Zone tampon autour de Paris
 
 ```{r selectDonnee2b, eval=TRUE}
 paris_sf <- suburbs_sf %>% filter(code=="75")
@@ -305,7 +322,7 @@ buffer_sf <- st_buffer(paris_sf,dist = 2000)
 ```
 
 
-**3.** Geographical intersection
+**3.** Sélection par intersection géographique
 
 ```{r selectDonnee2c, eval=TRUE}
 sfBase_buffer <- st_join(sfBase, buffer_sf,
@@ -341,16 +358,19 @@ On the left, you can see a way to handle it.
 ---
 
 .partie[02]
-# Step 0 : Cells aggregations
+# Étape 0 : Carroyage (facultatif)
 
 .pull-left[
 
-+ Better understand your data before smoothing it : **aggregation** inside grid cells !
-+ It's really easy using `btb` functions such as : 
++ Pour bien maîtriser son jeu de données avant lissage : commencer par **carroyer les données** !
+
+</br>
+
++ Très facile avec les fonctions intégrées à `btb` : 
   + `btb_add_centroids`
   + `btb_ptsToGrid`
 
-➡️ Let's calculate the mean price per square meters (among 2021 transactions) 
+➡️ Calculons les prix moyens au mètre-carré (parmis les transactions de 2021) sur des carreaux de 50m de côté
 
 ]
 
@@ -405,14 +425,14 @@ For example, it seems that prices are much higher in the center and the west tha
 ---
 
 .partie[02]
-# Smoothing [1/3]
+# Lissage [1/3]
 
-## Spatial smoothing with `btb::btb_smooth`
+## Lissage spatial avec `btb::btb_smooth`
 
 <small>
--   `pts` : table of points with only numeric variables (geometric object or not) ;
--   `iCellSize` : cell size in meters (granularity of the underlying grid) ;
--   `iBandwidth` : smoothing bandwidth in meters.
+-   `pts` : table des points avec uniquement des variables numériques (objet geometrique ou non) ;
+-   `iCellSize` : Taille des carreaux en mètres (granularité de la grille des résultats) ;
+-   `iBandwidth` : Rayon de lissage en mètres.
 </small>
 
 ```{r lissAuto800,  results='hide', eval=TRUE}
@@ -423,7 +443,7 @@ smooth_result <- btb::btb_smooth(pts = pts,
 ```
 
 ```{r showSmoothed1,  echo=FALSE,out.height="100px"}
-kbl(smooth_result[1:50,]) %>%
+kbl(slice_sample(smooth_result, n = 50)) %>%
   scroll_box(height = "200px")
 ```
 
@@ -447,12 +467,12 @@ Let's take a look at the output
 ---
 
 .partie[02]
-# Smoothing [2/3]
+# Lissage [2/3]
 
 
 
 .pull-left[
-## Get the smoothed prices per m²
+## Obtenir les prix au m² lissés
 
 
 ```{r getprice}
@@ -462,7 +482,7 @@ smooth_result <- smooth_result %>%
 ```
 
 
-## Only keep the cells inside Paris
+## Ne conserver que les estimations lissées à l'intérieur de Paris
 
 ```{r filtreParis}
 smooth_result <- smooth_result %>% 
@@ -478,7 +498,7 @@ smooth_result <- smooth_result %>%
 
 .pull-right[
 
-## Map the result
+## Cartographier le résultat
 ```{r resLissAuto800, echo=FALSE, eval=TRUE, fig.height=5}
 
 # Carte lissée
@@ -514,9 +534,9 @@ The map shows a spatially smoothed representation of prices for each square mete
 ---
 
 .partie[02]
-# Smoothing [3/3]
+# Lissage [3/3]
 
-## Possible with different bandwidths
+## Avec différents rayons de lissage (arbitrage biais-variance)
 
 .pull-left[
 
@@ -588,31 +608,33 @@ Depending whether you want structural or specific results, you can choose a wide
 ---
 
 .partie[02]
-# Find BTB
+# Retrouver BTB
 
 
 .pull-left[
 
-## `btb` available on CRAN and Github
+## `btb`  disponible sur le CRAN et sur Github
 
 ```{r,eval=F}
 install.packages("btb")
 ```
 
-## Find all the documentation you need
-
-Please visit `btb` website : 
-
-➡️ https://inseefr.github.io/btb/
+## Trouver toute la documentation :
 
 
-## And do not hesitate to contact us !
+➡️ [Site web](https://inseefr.github.io/btb/) de `btb`
 
-➡️  analyse-urbaine@insee.fr
+➡️ [Manuel](https://www.insee.fr/fr/information/3635442) d'analyse spatiale de l'Insee 
+
+</br>
+
+## Et n'hésitez pas à nous contacter !
+
+➡️  <analyse-urbaine@insee.fr>
 ]
 
 .pull-right[
-## Thank you for your attention !
+## Merci pour votre attention !
 
 ![](images/logo.png)
 ]
@@ -620,7 +642,7 @@ Please visit `btb` website :
 ---
 class: thanks, center, middle
 
-## Find us on:
+## Retrouvez-nous sur :
 [<img src="css/img/inseeFR.svg" style="height:18px"></img>](https://insee.fr/fr/accueil)&emsp;
 [<img src="css/img/Twitter.svg" style="height:18px"></img>](https://twitter.com/InseeFr)&emsp;
 [<img src="css/img/YouTube.svg" style="height:18px"></img>](https://www.youtube.com/channel/UChCCvJTbZEYsCXyfu27eQ6g)&emsp;
