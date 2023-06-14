@@ -1,5 +1,5 @@
-# Présentations du package R `btb` 
+# Présentations du package R `btb` pour RR 2023
 
 **Lien des présentations**
 
-- [uRos2022](https://inseefrlab.github.io/presentation-btb/uRos2022.html) en décembre 2022
+- [Slides](https://inseefrlab.github.io/presentation-btb-rr23/slides.html#1)
