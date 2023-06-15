@@ -95,7 +95,8 @@ Il existe d'autres packages de lissage :
 Mais...
 
 + Souhait de lissage **conservatif** ;
-+ Souhait de pouvoir mobiliser une grille de carreaux de la taille de son choix ;+ Souhait de pouvoir **imposer une zone de lissage** (pas de taux de pauvreté dans la mer !) ;
++ Souhait de pouvoir mobiliser une grille de carreaux de la taille de son choix ;
++ Souhait de pouvoir **imposer une zone de lissage** (pas de taux de pauvreté dans la mer !) ;
 + Souhait de faire du « lissage quantile » ;
 + Souhait d'algorithmes rapides.
 
