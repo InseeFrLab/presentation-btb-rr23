@@ -609,6 +609,17 @@ Depending whether you want structural or specific results, you can choose a wide
 ---
 
 .partie[02]
+# Lissage [3/3]
+
+<!-- ![](images/superman.png) -->
+```{r echo=FALSE, out.width = "78%", fig.align='center'}
+knitr::include_graphics("images/superman.png")
+
+```
+
+---
+
+.partie[02]
 # Retrouver BTB
 
 
@@ -626,6 +637,8 @@ install.packages("btb")
 ➡️ [Site web](https://inseefr.github.io/btb/) de `btb`
 
 ➡️ [Manuel](https://www.insee.fr/fr/information/3635442) d'analyse spatiale de l'Insee 
+
+➡️ [Auto-formation](https://github.com/InseeFrLab/formation-r-lissage-spatial)
 
 </br>
 
