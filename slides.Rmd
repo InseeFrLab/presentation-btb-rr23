@@ -47,7 +47,7 @@ class: inverse
 .partie[01]
 # Introduction
 
-## 3 manières de cartographier les données géographiques
+## 3 manières de cartographier les données ponctuelles
 
 .left-column[
 ![](images/3ways.png)
@@ -57,9 +57,9 @@ class: inverse
 .right-column[
 
 
-1. **Le territoire administratif** : une partition irrégulière de l'espace. Plusieurs difficultés : essentiellement l'effet **MAUP** (*Modifiable areal unit problem*) ;</br></br></br>
+1. **Agrégation sur territoire administratif** : une partition irrégulière de l'espace. Plusieurs difficultés : essentiellement l'effet **MAUP** (*Modifiable areal unit problem*) ;</br></br></br>
 
-2. **La grille carroyée** : un découpage régulier de l'espace en carreaux. Par construction, ces données peuvent être très erratiques ; </br></br></br>
+2. **Agrégation sur grille carroyée** : un découpage régulier de l'espace en carreaux. Par construction, ces données peuvent être très erratiques ; </br></br></br>
 
 3. **Lissage spatial** : une extension du carroyage consistant à décrire l'environnement d'une population dans un rayon donné.
 ]
@@ -67,13 +67,20 @@ class: inverse
 
 
 ???
-There are many way of mapping geographical data. 
+Il existe plusieurs manière de cartographier et interpréter des données ponctuelles.
+On peut citer 3 manière usuelles de procéder.
 
-1) Usually, you can see maps of administrative territories. For example, counties and states in the US.  These non-regular divisions of space can lead to the modifiable areal unit problem effect. That is to say the fact that a spatial indicator is strongly influenced by both shape and scale of the aggregation unit.
+1) On peut agréger ces données dans des polygons s'apppuyant sur un découpage, généralement administratif du territoire (les départements, les communes, etc.).
 
-2) One solution is to map the data on a regular grid whose size depends on the phenomenon to be observed. Small grids make it possible to observe sub-municipal spatial phenomena, but the rendering can be visually erratic.
+Ces découpage de l'espace peuvent générer un effet MAUP (modifiable areal unit problem) et biaiser notre représentation des phénomène.
+L'effet MAUP est dû au lien existant entre nos données et la forme des divisions administrative, mais aussi à l'echelle d'observation imposée par ses divisions du territoire.
 
-3) Finally, spatial smoothing is a key method for analyzing spatial organization of data available at a small geographic level, by providing simplified and clearer mapping, relieved of the arbitrariness of territorial boundary lines.
+2) Pour limiter les risques, une solution consiste à agréger et cartographier nos données en utilisant une grille carroyée régulière, avec une taille de carreau dépendant du phénomène observé et de l'échelle d'observation.
+
+Des grilles carroyées composées de petits carreaux peuvent permettre, par exemple, d'observer des phénomènes infracommunaux. Néanmoins, le rendu peut avoir un aspect très erratique et limiter l'interprétabilité de nos cartes.
+
+
+3) Enfin, le lissage spatial est une méthode clé pour analyser la répartition spatiale des données disponibles à un niveau géographique fin, en fournissant une cartographie claire et simple, débarrassée de l'arbitraire délimitations administratives.
 
 
 ---
@@ -95,10 +102,20 @@ Il existe d'autres packages de lissage :
 Mais...
 
 + Souhait de lissage **conservatif** ;
-+ Souhait de pouvoir mobiliser une grille de carreaux de la taille de son choix ;
-+ Souhait de pouvoir **imposer une zone de lissage** (pas de taux de pauvreté dans la mer !) ;
++ Souhait de pouvoir gérer les **effets de bord** ;
++ Souhait de pouvoir **imposer une zone de lissage**
+  + pas de taux de pauvreté dans la mer ! ;
+  + résolution choisie
 + Souhait de faire du « lissage quantile » ;
-+ Souhait d'algorithmes rapides.
++ Souhait de disposer d'un algorithme rapide.
+
+???
+
+Il existe d'autres packages pour faire du lissage spatial
+Notamment spatstats, très complet, qui permet notamment d'uiliser des algorithme de choix du rayon de lissage optimal.
+Mais utilise les Transformations de fourier rapide, qui posent problème dans la gestion des effets de bord, particulièrement important en analyse urbaine.
+
+
 
 ---
 
@@ -114,27 +131,14 @@ Mais...
 
 ## btb
 
-+ Développé depuis 2018, par l'Insee
 + Package R
++ Développé depuis 2018, par l'Insee
++ Mis à jour en 2022 (versions 0.2.0)
 + Cœur écrit en C++ (Rcpp)
 
 ➡️ Répond aux contraintes de l'analyse urbaine 
 
 ]
-
-
-???
-
-Several R packages make it possible to perform smoothing. [For example, the spatstat package dedicated to the analysis of spatial point processes is very complete. It includes a smoothing function (density.ppp) and various functions for choosing optimal bandwidths (bw.diggle, bw.frac...).]
-
-Often, their functions rely on a Fast Fourier Transform to calculate the smoothing. But this process is not suitable for situations where edge effects are important...
-
-The btb R package was developed in 2018 by the French National Institute of Statistics and Economic Studies (Insee).
-
-It deals with edge effects and also makes it possible to use quantile smoothing, which has the advantage of being less sensitive to extreme values [and thus enriches the analysis of some variables, in particular income variables.]
-
-[R software is very polyvalent and has a very flexible grammar but on the other hand it is slow. To circumvent this limitation,  ] The btb package has been developed
-in C++ using the Rcpp package. We thus benefit from the R Syntax and the power of C++ with a relatively modest development cost.
 
 ---
 
