@@ -57,7 +57,7 @@ class: inverse
 .right-column[
 
 
-1. **Le territoire** : une partition irrégulière de l'espace. Plusieurs difficultés : essentiellement l'effet **MAUP** (*Modifiable areal unit problem*) ;</br></br></br>
+1. **Le territoire administratif** : une partition irrégulière de l'espace. Plusieurs difficultés : essentiellement l'effet **MAUP** (*Modifiable areal unit problem*) ;</br></br></br>
 
 2. **La grille carroyée** : un découpage régulier de l'espace en carreaux. Par construction, ces données peuvent être très erratiques ; </br></br></br>
 
@@ -114,7 +114,7 @@ Mais...
 
 ## btb
 
-+ Développé en 2018, par l'Insee
++ Développé depuis 2018, par l'Insee
 + Package R
 + Cœur écrit en C++ (Rcpp)
 
