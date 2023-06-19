@@ -20,10 +20,11 @@ output:
       highlightLines: true
       countIncrementalSlides: false
 ---
-```{r xaringan-animate-all, echo=FALSE}
+
+```{r xaringan-animate-all, echo=FALSE, eval = FALSE}
 xaringanExtra::use_animate_all("fade")
 ```
-```{r xaringan-scribble, echo=FALSE}
+```{r xaringan-scribble, echo=FALSE, eval = FALSE}
 xaringanExtra::use_scribble()
 ```
 
