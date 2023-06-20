@@ -68,20 +68,23 @@ class: inverse
 
 
 ???
-Il existe plusieurs manière de cartographier et interpréter des données ponctuelles.
-On peut citer 3 manière usuelles de procéder.
+- Il existe plusieurs manières de cartographier et interpréter des données ponctuelles.
+- On peut citer 3 manières usuelles de procéder, au moins dans le cadre de l'analyse urbaine.
 
-1) On peut agréger ces données dans des polygons s'apppuyant sur un découpage, généralement administratif du territoire (les départements, les communes, etc.).
+1) On peut agréger ces données dans des polygones s'apppuyant sur un découpage, généralement administratif du territoire (les départements, les communes, etc.).
 
-Ces découpage de l'espace peuvent générer un effet MAUP (modifiable areal unit problem) et biaiser notre représentation des phénomène.
+Ces découpages de l'espace peuvent générer un effet MAUP (modifiable areal unit problem) et biaiser notre représentation des phénomène.
 L'effet MAUP est dû au lien existant entre nos données et la forme des divisions administrative, mais aussi à l'echelle d'observation imposée par ses divisions du territoire.
 
 2) Pour limiter les risques, une solution consiste à agréger et cartographier nos données en utilisant une grille carroyée régulière, avec une taille de carreau dépendant du phénomène observé et de l'échelle d'observation.
 
-Des grilles carroyées composées de petits carreaux peuvent permettre, par exemple, d'observer des phénomènes infracommunaux. Néanmoins, le rendu peut avoir un aspect très erratique et limiter l'interprétabilité de nos cartes.
+- Permet, par exemple, d'observer des phénomènes infracommunaux. 
+- Néanmoins, aspect très erratique / limite l'interprétabilité de nos cartes.
 
-
-3) Enfin, le lissage spatial est une méthode clé pour analyser la répartition spatiale des données disponibles à un niveau géographique fin, en fournissant une cartographie claire et simple, débarrassée de l'arbitraire délimitations administratives.
+3) Lissage spatial 
+- Méthode clé pour analyser la répartition spatiale des données disponibles à un niveau géographique fin
+- en fournissant une cartographie claire et simple
+- débarrassée de l'arbitraire délimitations administratives.
 
 
 ---
@@ -98,6 +101,12 @@ Il existe d'autres packages de lissage :
 + `KernSmooth`
 + `spatstat`... 
 
+???
+
+Il existe d'autres packages pour faire du lissage spatial
+Notamment spatstats, très complet, qui permet notamment d'uiliser des algorithme de choix du rayon de lissage optimal.
+Mais utilise les Transformations de fourier rapide, qui posent problème dans la gestion des effets de bord, particulièrement important en analyse urbaine.
+
 --
 
 Mais...
@@ -110,11 +119,6 @@ Mais...
 + Souhait de faire du « lissage quantile » ;
 + Souhait de disposer d'un algorithme rapide.
 
-???
-
-Il existe d'autres packages pour faire du lissage spatial
-Notamment spatstats, très complet, qui permet notamment d'uiliser des algorithme de choix du rayon de lissage optimal.
-Mais utilise les Transformations de fourier rapide, qui posent problème dans la gestion des effets de bord, particulièrement important en analyse urbaine.
 
 
 
