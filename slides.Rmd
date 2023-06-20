@@ -103,9 +103,12 @@ Il existe d'autres packages de lissage :
 
 ???
 
-Il existe d'autres packages pour faire du lissage spatial
-Notamment spatstats, très complet, qui permet notamment d'uiliser des algorithme de choix du rayon de lissage optimal.
-Mais utilise les Transformations de fourier rapide, qui posent problème dans la gestion des effets de bord, particulièrement important en analyse urbaine.
+- Il existe d'autres packages pour faire du lissage spatial
+- Notamment spatstats : 
+  - très complet
+  - permet notamment d'uiliser des algorithmes de choix du rayon de lissage optimal.
+
+Mais utilisent les Transformations de fourier rapide, qui posent problème dans la gestion des effets de bord, particulièrement important en analyse urbaine.
 
 --
 
@@ -152,17 +155,28 @@ Mais...
 
 .pull-left[
 
-**Les hypothèses de lissage**
+**Les paramétrage du lissage**
 
   + Un **noyau** (*kernel*) indiquant la manière d'approcher le voisinage ;
   
-  + Le **rayon de lissage** quantifiant la taille du voisinage (arbitrage biais/variance) ;
+  + Le **rayon de lissage**, décrivant la taille du voisinage (arbitrage biais/variance) ;
   
   + La **résolution** ou le nombre de points sur lesquels des valeurs lissées seront estimées ;
   
   + La **gestion des effets de bord**, pour expliciter la manière dont les frontières géographiques et la zone d'observation sont prises en compte dans le lissage.
 
 ]
+
+???
+
+[Spatial smoothing is a non-parametric estimation method for the intensity function of a point process with observed values in R².]
+In spatial smoothing, the intensity function in one point x is found by calculating the average points observed per unit surface on neighbourhoods containing x. 
+
+And you have to determine various parameters: 
+- the kernel which describes how the neighborhood is approached ;
+- the bandwidth which is the size of this neighborhood
+- the geographical level
+- and how to deal or not with edge effects.
 
 --
 
@@ -181,27 +195,9 @@ Mais...
   
    </br>
   
-  + _Pris en compte. **Méthode conservative**_
+  + **Grille de lissage** paramétrable
 ]
 
-
-???
-
-[Spatial smoothing is a non-parametric estimation method for the intensity function of a point process with observed values in R².]
-In spatial smoothing, the intensity function in one point x is found by calculating the average points observed per unit surface on neighbourhoods containing x. 
-
-And you have to determine various parameters: 
-- the kernel which describes how the neighborhood is approached ;
-- the bandwidth which is the size of this neighborhood
-- the geographical level
-- and how to deal or not with edge effects.
-
-In btb
-- the kernel is quadratic
-- the variable can be chosen by the user
-- we use a squared grid with chosen size
-- and the edge effects are taken into account, using a conservative method : that is to say that before and after smoothing, the number of points observed is identical. 
-- 
 ---
 class: inverse
 
@@ -233,12 +229,15 @@ Variables utilisées dans notre exemple :
 
 ???
 
-In this example, we will extract our data from the source "Demande de valeur foncière".
-This source gives information about real estate transactions in France.
-In particular, the transactions are geolocalized thanks to the longitude and latitude variables.
+- Source "Demande de valeur foncière".
+- Transactions immobilières en France 
+  - ici uniquement Paris et petite couronne.
+  - uniquement sur l'année 2021
+- transactions géolocalisées.
 
-We'll show how to smooth prices per square meters in the town of Paris in 2021. 
-
+Dans ce cas d'utilisation,
+- Prix au mètre-carré
+- Dans Paris intramuros
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE, eval=TRUE}
 ## Liste des librairies utilisées
