@@ -155,7 +155,7 @@ Mais...
 
 .pull-left[
 
-**Les paramétrage du lissage**
+**Les paramétrages du lissage**
 
   + Un **noyau** (*kernel*) indiquant la manière d'approcher le voisinage ;
   
@@ -167,16 +167,6 @@ Mais...
 
 ]
 
-???
-
-[Spatial smoothing is a non-parametric estimation method for the intensity function of a point process with observed values in R².]
-In spatial smoothing, the intensity function in one point x is found by calculating the average points observed per unit surface on neighbourhoods containing x. 
-
-And you have to determine various parameters: 
-- the kernel which describes how the neighborhood is approached ;
-- the bandwidth which is the size of this neighborhood
-- the geographical level
-- and how to deal or not with edge effects.
 
 --
 
