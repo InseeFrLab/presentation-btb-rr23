@@ -261,6 +261,25 @@ package.check <- lapply(
 # Chargement des données
 
 .pull-left[
+
+## Chargement des données
+
+```{r, eval=TRUE, echo=TRUE}
+url_file <- url("https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/ventesImmo_couronneParis.RDS")
+dfBase <- readRDS(url_file)
+dfBase <- dfBase[,c("id_mutation",
+                    "valeur_fonciere",
+                    "surface_reelle_bati",
+                    "x","y")]
+```
+
+```{r, echo=F}
+kableExtra::kbl(head(dfBase,5)) %>% scroll_box(width = "500px", height = "200px")
+```
+
+]
+
+.pull-rigth[
 ## Chargement des fonds de carte
 
 
@@ -280,32 +299,6 @@ mapview(suburbs_sf$geometry)
 
 
 ]
-
-.pull-right[
-
-## Chargement des données
-
-```{r, eval=TRUE, echo=TRUE}
-url_file <- url("https://minio.lab.sspcloud.fr/projet-formation/r-lissage-spatial/ventesImmo_couronneParis.RDS")
-dfBase <- readRDS(url_file)
-dfBase <- dfBase[,c("id_mutation",
-                    "valeur_fonciere",
-                    "surface_reelle_bati",
-                    "x","y")]
-```
-
-```{r, echo=F}
-kableExtra::kbl(head(dfBase,5)) %>% scroll_box(width = "500px", height = "200px")
-```
-
-]
-
-???
-
-First, we import layer to get Paris boundaries. 
-Here, you can see the 3 departments called Petite Couronne. It's the dense urbain area around the town of Paris (the polygon in the middle).
-
-Secondly, we import our transactions data and we select the useful variables. 
 
 ---
 
@@ -357,12 +350,10 @@ mapview(paris_sf ,col.regions= "#26cce7")+
 
 ???
 
-Handling potential edge effects is an important part of spatial smoothing. 
-Here, we are only interested about prices inside Paris Town.
-Anyway, it can be important (and sometimes mandatory) to use data beyond the very border of your studied zone. Otherwise, it can generate artifacts on the edge of this zone.
+- Gestion des effets de bord, étape fondamentale du lissage spatial. 
+- Important, parfois obligatoire, d'utiliser des données au-delà de sa zone d'étude. 
 
-That's why we'll smooth the transactions in Paris plus a buffer (here 2000 meters).
-On the left, you can see a way to handle it. 
+Ici, on lisse les prix des transactions à Paris et dans un buffer de 2000 metres autour.
 
 ---
 
@@ -423,13 +414,13 @@ mf_layout(title = "Mean price per m²",
 
 ???
 
-Now, you could directly smooth your data and get the result.
-But, to better understand your data, you can use a grid and calculate mean prices inside all the cells (here with 50 meters squares).
+- On peut directement passer au lissage, mais...
+- Pour bien s'approprier les données, un carroyage préalable peut-être utile
+- Simple moyenne sur une grille carroyée
+- Facile à faire avec BTB
 
-The package makes it very easy using the following functions. 
-
-The result is far from synthetic (and beautiful) : but still, it's a first insight !
-For example, it seems that prices are much higher in the center and the west than on the borders of the city and on the north east.
+- Résultat peu esthétique, pasa très synthétique... mais premier aperçu brut.
+- Prix plus élevés dans le centre et le centre ouest qu'à proximité du périphéique, nord, est et sud-est
 
 ---
 
@@ -458,20 +449,19 @@ kbl(slice_sample(smooth_result, n = 50)) %>%
 
 ???
 
-Now, let's smooth your data.
-We'll use the btb_smooth function, the most important function of the BTB package. 
-
-In this example, we only need 3 parameters : 
+- Passsons au lissage
+- On utilise la fonction btb_smooth la plus importante du package BTB. 
+Dans cet exemple, 3 paramètres : 
 ......
 
-- we select prices and surfaces for our transactions
-- we smooth it
+- On sélectionne les prix et les surfaces des transactions
+- Et on les lisse
 
-Let's take a look at the output
+Output : 
 
-- This is a sf table, a table of geometric square cells
-- Price and surface variables have been smoothed.
-
+- Table de carreaux de type géometrique (objet sf)
+- xy : les coordonnées des centroïdes des carreaux (points d'estimation des valeurs lissées)
+- Les prix lissés et les surfaces lissés.
 
 ---
 
@@ -532,13 +522,9 @@ mf_layout(title = "Smoothed prices (800m bandwidth)",
 
 ???
 
-Then : 
-
-- we calculate the smoothed ratio : the smoothed price per square meters
-- And, finally, we only keep the results in Paris using geographic intersection.
-
-The map shows a spatially smoothed representation of prices for each square meters sold in Paris in 2021.
-
+- On calcule le ratio lissé
+- On ne conserve que les carreaux de la grille résultat à l'intérieur de Paris intramuros.
+- On cartographie
 
 ---
 
@@ -611,8 +597,7 @@ mf_layout(title = "Smoothed prices (1200m bandwidth)",
 
 ???
 
-Depending whether you want structural or specific results, you can choose a wider or a smaller bandwidth.
-
+Selon que l'on souhaite des résultats structurels ou des résultats contenant des spécificités locales, on ajuste la taille du rayon de lissage.
 
 ---
 
